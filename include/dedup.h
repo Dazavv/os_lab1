@@ -5,12 +5,14 @@
 #include <string>
 #include <iostream>
 #include <fstream>
-#include <set>
+#include <unordered_set>
+#include <windows.h>
+#include <filesystem>
 
-using namespace std;
 
-vector<int> readDataFromFile(const string& filename);
-void writeDataToFile(const string& filename, const vector<int>& data);
-void dedup(const string& inputFile, const string& outputFile);
+
+std::vector<int> readDataFromFile(const std::string& filename);
+void writeDataToFile(const std::string& filename, const std::vector<int>& data);
+void dedup(const std::string& inputFile, const std::string& outputFile);
 
 #endif //OS_LAB1_DEDUP_H

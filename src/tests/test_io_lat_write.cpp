@@ -17,7 +17,7 @@ TEST(IOLatWriteTest, CheckFile) {
     int iterations = 1000;
 
     // Запускаем io-lat-write
-    io_lat_write(iterations, outputFile);
+    IOLatWrite(iterations, outputFile);
 
     // Проверяем, что файл был создан и содержит данные
     EXPECT_TRUE(isFileValid(outputFile));

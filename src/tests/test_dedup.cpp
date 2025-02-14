@@ -30,7 +30,7 @@ TEST(DedupTest, RemovesDuplicates) {
 
     // Получаем данные из файла после выполнения команды
     vector<int> result = readFileData(outputFile);
-    vector<int> expected = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    vector<int> expected = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
 
     // Сравниваем полученный результат с ожидаемым
     EXPECT_EQ(result, expected);

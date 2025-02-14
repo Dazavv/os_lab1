@@ -7,10 +7,8 @@
 #include <chrono>
 #include <iostream>
 
-using namespace std;
-
 void ExecuteShell();
-vector<string> splitCommand(const string& input);
-bool launchProcess(const string& command, vector<string>& args);
+std::vector<std::string_view> splitCommand(const std::string& input);
+bool launchProcess(const std::string& command, const std::vector<std::string_view>& args);
 
 #endif //OS_LAB1_SHELL_H

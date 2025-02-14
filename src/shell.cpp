@@ -1,57 +1,57 @@
 #include "../include/shell.h"
 
 // Функция для разбиения введенной строки на команду и аргументы
-vector<string> splitCommand(const string& input) {
-    vector<string> parts;
+std::vector<std::string_view> splitCommand(const std::string& input) {
+    std::vector<std::string_view> parts;
     size_t pos = 0, found;
-    while ((found = input.find_first_of(' ', pos)) != string::npos) {
+    while ((found = input.find_first_of(' ', pos)) != std::string::npos) {
         if (found > pos) {
-            parts.push_back(input.substr(pos, found - pos));
+            parts.push_back(std::string_view(input.data() + pos, found - pos));
         }
         pos = found + 1;
     }
-    if (pos < input.length()) parts.push_back(input.substr(pos));
+    if (pos < input.length()) parts.push_back(std::string_view(input.data() + pos));
     return parts;
 }
 // Функция для запуска процесса с заданной командой и аргументами
-bool launchProcess(const string& command, vector<string>& args) {
-    string fullCommand = "\"" + command + "\"";
+bool launchProcess(const std::string& command, const std::vector<std::string_view>& args) {
+    std::string fullCommand = "\"" + command + "\"";
     for (const auto& arg : args) {
-        fullCommand += " \"" + arg + "\"";
+        fullCommand += " \"" + std::string(arg) + "\"";
     }
 
     HANDLE hToken;
     // Открываем текущий процесс для получения его токена доступа
     if (!OpenProcessToken(GetCurrentProcess(), TOKEN_DUPLICATE | TOKEN_ASSIGN_PRIMARY | TOKEN_QUERY, &hToken)) {
-        cerr << "Failed to open process token. Error code: " << GetLastError() << endl;
+        std::cerr << "Failed to open process token. Error code: " << GetLastError() << std::endl;
         return false;
     }
 
     HANDLE hNewToken;
     // Дублируем токен для нового процесса
     if (!DuplicateTokenEx(hToken, MAXIMUM_ALLOWED, nullptr, SecurityImpersonation, TokenPrimary, &hNewToken)) {
-        cerr << "Failed to duplicate token. Error code: " << GetLastError() << endl;
+        std::cerr << "Failed to duplicate token. Error code: " << GetLastError() << std::endl;
         CloseHandle(hToken);
         return false;
     }
     CloseHandle(hToken);
 
-    STARTUPINFO si = {sizeof(STARTUPINFO)}; // Для информации о запуске процесса
-    PROCESS_INFORMATION pi = {}; // Для информации о процессе
-    auto startTime = chrono::high_resolution_clock::now();
+    STARTUPINFO si = {sizeof(STARTUPINFO)};
+    PROCESS_INFORMATION pi = {};
+    auto startTime = std::chrono::high_resolution_clock::now();
 
     // Создаем новый процесс с использованием дублированного токена
     if (!CreateProcessAsUserA(hNewToken, nullptr, fullCommand.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi)) {
-        cerr << "Failed to start process. Error code: " << GetLastError() << endl;
+        std::cerr << "Failed to start process. Error code: " << GetLastError() << std::endl;
         CloseHandle(hNewToken);
         return false;
     }
 
     // Завершения процесса
     WaitForSingleObject(pi.hProcess, INFINITE);
-    auto endTime = chrono::high_resolution_clock::now();
-    auto executionTime = chrono::duration_cast<chrono::milliseconds>(endTime - startTime).count();
-    cout << "Execution time: " << executionTime << " ms" << endl;
+    auto endTime = std::chrono::high_resolution_clock::now();
+    auto executionTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
+    std::cout << "Execution time: " << executionTime << " ms" << std::endl;
 
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
@@ -62,28 +62,28 @@ bool launchProcess(const string& command, vector<string>& args) {
 
 // Основная функция оболочки
 void ExecuteShell() {
-    string input;
-    cout << "Welcome to the new shell! Type 'exit' to exit the shell\n";
+    std::string input;
+    std::cout << "Welcome to the new shell! Type 'exit' to exit the shell\n";
     while (true) {
-        cout << "shell> ";
-        getline(cin, input);
+        std::cout << "shell> ";
+        getline(std::cin, input);
 
         auto parts = splitCommand(input);
         if (parts.empty()) continue;
 
-        string command = parts[0];
-        vector<string> args(parts.begin() + 1, parts.end());
+        std::string command = std::string(parts[0]);
+        std::vector<std::string_view> args(parts.begin() + 1, parts.end());
 
         if (command == "exit") {
-            cout << "Exiting shell...\n";
+            std::cout << "Exiting shell...\n";
             break;
         }
         if (command == "info") {
-            cout << "dedup <inputFile> <outputFile>\nio-lat-write <outputFile> <number of iterations>\n" << endl;
+            std::cout << "dedup <inputFile> <outputFile>\nio-lat-write <outputFile> <number of iterations>\n" << std::endl;
             continue;
         } else {
             if (!launchProcess(command, args)) {
-                cerr << "Error executing command: " << command << endl;
+                std::cerr << "Error executing command: " << command << std::endl;
             }
         }
     }

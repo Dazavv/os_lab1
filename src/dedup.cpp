@@ -30,22 +30,18 @@ std::vector<int> readDataFromFile(const std::string& filename) {
     }
     CloseHandle(file);
 
-//    std::size_t pos = 0;
-//    while (pos < content.size()) {
-//        try {
-//            std::size_t newPos;
-//            int value = stoi(content.substr(pos), &newPos);
-//            data.push_back(value);
-//            pos += newPos;
-//        } catch (const std::exception&) {
-//            break;
-//        }
-//    }
-    std::stringstream ss(content);
-    int value;
-    while (ss >> value) {
-        data.push_back(value);
+    std::size_t pos = 0;
+    while (pos < content.size()) {
+        try {
+            std::size_t newPos;
+            int value = stoi(content.substr(pos), &newPos);
+            data.push_back(value);
+            pos += newPos;
+        } catch (const std::exception&) {
+            break;
+        }
     }
+
     return data;
 }
 

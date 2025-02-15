@@ -22,14 +22,23 @@ bool launchProcess(const std::string& command, const std::vector<std::string_vie
 
     HANDLE hToken;
     // Открываем текущий процесс для получения его токена доступа
-    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_DUPLICATE | TOKEN_ASSIGN_PRIMARY | TOKEN_QUERY, &hToken)) {
+    if (!OpenProcessToken(
+            /* ProcessHandle = */ GetCurrentProcess(),
+            /* DesiredAccess = */ TOKEN_DUPLICATE | TOKEN_ASSIGN_PRIMARY | TOKEN_QUERY,
+            /* TokenHandle = */ &hToken)) {
         std::cerr << "Failed to open process token. Error code: " << GetLastError() << std::endl;
         return false;
     }
 
     HANDLE hNewToken;
     // Дублируем токен для нового процесса
-    if (!DuplicateTokenEx(hToken, MAXIMUM_ALLOWED, nullptr, SecurityImpersonation, TokenPrimary, &hNewToken)) {
+    if (!DuplicateTokenEx(
+            /* hExistingToken = */ hToken,
+            /* dwDesiredAccess = */ MAXIMUM_ALLOWED,
+            /* lpTokenAttributes = */ nullptr,
+            /* ImpersonationLevel = */ SecurityImpersonation,
+            /* TokenType = */TokenPrimary,
+            /* phNewToken = */ &hNewToken)) {
         std::cerr << "Failed to duplicate token. Error code: " << GetLastError() << std::endl;
         CloseHandle(hToken);
         return false;
@@ -41,7 +50,18 @@ bool launchProcess(const std::string& command, const std::vector<std::string_vie
     auto startTime = std::chrono::high_resolution_clock::now();
 
     // Создаем новый процесс с использованием дублированного токена
-    if (!CreateProcessAsUserA(hNewToken, nullptr, fullCommand.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi)) {
+    if (!CreateProcessAsUserA(
+            /* hToken = */ hNewToken,
+            /* lpApplicationName = */ nullptr,
+            /* lpCommandLine = */ fullCommand.data(),
+            /* lpProcessAttributes = */ nullptr,
+            /* lpThreadAttributes = */ nullptr,
+            /* bInheritHandles = */ FALSE,
+            /* dwCreationFlags = */ 0,
+            /* lpEnvironment = */ nullptr,
+            /* lpCurrentDirectory = */ nullptr,
+            /* lpStartupInfo = */ &si,
+            /* lpProcessInformation = */ &pi)) {
         std::cerr << "Failed to start process. Error code: " << GetLastError() << std::endl;
         CloseHandle(hNewToken);
         return false;
@@ -71,7 +91,7 @@ void ExecuteShell() {
         auto parts = splitCommand(input);
         if (parts.empty()) continue;
 
-        std::string command = std::string(parts[0]);
+        std::string_view command = parts[0];
         std::vector<std::string_view> args(parts.begin() + 1, parts.end());
 
         if (command == "exit") {
@@ -82,7 +102,7 @@ void ExecuteShell() {
             std::cout << "dedup <inputFile> <outputFile>\nio-lat-write <outputFile> <number of iterations>\n" << std::endl;
             continue;
         } else {
-            if (!launchProcess(command, args)) {
+            if (!launchProcess(std::string(command), args)) {
                 std::cerr << "Error executing command: " << command << std::endl;
             }
         }

@@ -1,12 +1,18 @@
 #include "../include/io_lat_write.h"
 
-void IOLatWrite(int iterations, const std::filesystem::path& filePath) {
+void IOLatWrite(int iterations, const std::string& filePath) {
     const int block_size = 1024; // размер блока 1К
     std::vector<char> data(block_size, 'A');
-    std::ofstream file(filePath, std::ios::binary);
 
-    if (!file.is_open()) {
-        std::cerr << "Error opening file for writing" << std::endl;
+    HANDLE file = CreateFileA(filePath.c_str(),
+                              GENERIC_WRITE,
+                              0,
+                              NULL,
+                              CREATE_ALWAYS,
+                              FILE_ATTRIBUTE_NORMAL,
+                              NULL);
+    if (file == INVALID_HANDLE_VALUE) {
+        std::cerr << "error opening file: " << filePath<< std::endl;
         return;
     }
 
@@ -21,12 +27,24 @@ void IOLatWrite(int iterations, const std::filesystem::path& filePath) {
     // Цикл записи данных в файл заданное количество раз
     for (int i = 0; i < iterations; ++i) {
         int offset = dis(gen); // Генерируем случайное смещение
-        file.seekp(offset); // Устанавливаем указатель записи в файл на сгенерированное смещение
-        file.write(data.data(), block_size);
+        // Устанавливаем указатель записи в файл на сгенерированное смещение
+        if (SetFilePointer(file, offset, NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
+            std::cerr << "Error seeking in file " << std::endl;
+            CloseHandle(file);
+            return;
+        }
+
+        DWORD bytesWritten;
+        if (!WriteFile(file, data.data(), block_size, &bytesWritten, NULL) || bytesWritten != block_size) {
+            std::cerr << "Error writing to file" << std::endl;
+            return;
+        }
     }
     auto end_time = std::chrono::high_resolution_clock::now();
     auto elapsed_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
     std::cout << "average write time per iteration: " << elapsed_time / iterations << " [ns]" << std::endl;
+
+    CloseHandle(file);
 }
 #ifndef TESTING
 int main(int argc, char* argv[]) {

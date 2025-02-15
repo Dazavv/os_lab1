@@ -11,6 +11,6 @@
 #include <windows.h>
 
 
-void IOLatWrite(int iterations, const std::filesystem::path& filePath);
+void IOLatWrite(int iterations, const std::string& filePath);
 
 #endif //OS_LAB1_IO_LAT_WRITE_H

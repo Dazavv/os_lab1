@@ -3,37 +3,35 @@
 #include <sstream>
 #include <gtest/gtest.h>
 
-using namespace std;
-
 // Функция для имитации работы shell
-string simulateShellInput(const string& input) {
-    istringstream inputStream(input);
-    ostringstream outputStream;
-    streambuf* cinBackup = cin.rdbuf();
-    streambuf* coutBackup = cout.rdbuf();
+std::string simulateShellInput(const std::string& input) {
+    std::istringstream inputStream(input);
+    std::ostringstream outputStream;
+    std::streambuf* cinBackup = std::cin.rdbuf();
+    std::streambuf* coutBackup = std::cout.rdbuf();
 
-    cin.rdbuf(inputStream.rdbuf());
-    cout.rdbuf(outputStream.rdbuf());
+    std::cin.rdbuf(inputStream.rdbuf());
+    std::cout.rdbuf(outputStream.rdbuf());
 
     ExecuteShell();
 
-    cin.rdbuf(cinBackup);
-    cout.rdbuf(coutBackup);
+    std::cin.rdbuf(cinBackup);
+    std::cout.rdbuf(coutBackup);
 
     return outputStream.str();
 }
 
 // Тест команды exit
 TEST(ShellTest, ExitCommand) {
-    string output = simulateShellInput("exit\n");
-    EXPECT_NE(output.find("Exiting shell..."), string::npos);
+    std::string output = simulateShellInput("exit\n");
+    EXPECT_NE(output.find("Exiting shell..."), std::string::npos);
 }
 
 // Тест команды info
 TEST(ShellTest, InfoCommand) {
-    string output = simulateShellInput("info\nexit\n");
-    EXPECT_NE(output.find("dedup <inputFile> <outputFile>"), string::npos);
-    EXPECT_NE(output.find("io-lat-write <outputFile> <number of iterations>"), string::npos);
+    std::string output = simulateShellInput("info\nexit\n");
+    EXPECT_NE(output.find("dedup <inputFile> <outputFile>"), std::string::npos);
+    EXPECT_NE(output.find("io-lat-write <outputFile> <number of iterations>"), std::string::npos);
 }
 
 int main(int argc, char **argv) {

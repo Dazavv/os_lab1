@@ -39,6 +39,9 @@ void IOLatWrite(int iterations, const std::string& filePath) {
             std::cerr << "Error writing to file" << std::endl;
             return;
         }
+        if (!FlushFileBuffers(file)) {
+            std::cerr << "Error flushing buffers" << std::endl;
+        }
     }
     auto end_time = std::chrono::high_resolution_clock::now();
     auto elapsed_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();

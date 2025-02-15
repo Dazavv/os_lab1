@@ -51,7 +51,7 @@ void writeDataToFile(const std::string& filename, const std::vector<int>& data) 
                              GENERIC_WRITE,
                              0,
                              NULL,
-                             CREATE_ALWAYS,
+                              OPEN_EXISTING,
                              FILE_ATTRIBUTE_NORMAL,
                              NULL);
     if (file == INVALID_HANDLE_VALUE) {
